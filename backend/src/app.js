@@ -24,9 +24,12 @@ app.use(express.static("public"));
 // routes imports
 
 import userRouter from "./routes/user.routes.js";
+import errorMiddleware from "./utils/error.middleware.js";
 
 
 
 // routes 
 app.use('/api/v1/auth', userRouter)
+
+app.use(errorMiddleware);
 export default app;

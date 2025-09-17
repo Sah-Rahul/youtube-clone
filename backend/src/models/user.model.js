@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
       ],
     },
 
-    fullname: {
+    fullName: {
       type: String,
       required: [true, "Full name is required"],
       trim: true,
@@ -47,8 +47,13 @@ const userSchema = new mongoose.Schema(
     },
 
     watchHistory: {
-      type: Schema.Types.ObjectId,
-      ref: "Video",
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Video",
+        },
+      ],
+      default: [],  
     },
 
     refreshToken: {
