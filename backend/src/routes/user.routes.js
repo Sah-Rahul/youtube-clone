@@ -5,9 +5,12 @@ import {
   logoutUser,
   getMyProfile,
   refreshAccessToken,
+  updateAccountDetails,
+  updateUserAvatar,
+  changeCurrentPassword,
 } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
-import { verifyJWT} from "../middleware/auth.middleware.js";
+import { verifyJWT } from "../middleware/auth.middleware.js";
 
 const userRouter = express.Router();
 
@@ -24,5 +27,8 @@ userRouter.post("/login", loginUser);
 userRouter.post("/logout", verifyJWT, logoutUser);
 userRouter.get("/me", verifyJWT, getMyProfile);
 userRouter.post("/refresh-token", refreshAccessToken);
+userRouter.put("/change-password", verifyJWT, changeCurrentPassword);
+userRouter.put("/update-account", verifyJWT, updateAccountDetails);
+userRouter.put("/avatar", upload.single("avatar"), verifyJWT, updateUserAvatar);
 
 export default userRouter;
