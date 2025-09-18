@@ -9,10 +9,9 @@ const userSchema = new mongoose.Schema(
       required: [true, "Username is required"],
       unique: true,
       trim: true,
-      index: true,
       lowercase: true,
+      index: true,
     },
-
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -24,48 +23,38 @@ const userSchema = new mongoose.Schema(
         "Please fill a valid email address",
       ],
     },
-
     fullName: {
       type: String,
       required: [true, "Full name is required"],
       trim: true,
     },
-
     password: {
       type: String,
       required: [true, "Password is required"],
       select: false,
     },
-
     avatar: {
       type: String,
       required: true,
     },
-
     coverImage: {
       type: String,
+      default: "",
     },
-
-    watchHistory: {
-      type: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: "Video",
-        },
-      ],
-      default: [],  
-    },
-
+    watchHistory: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
     refreshToken: {
       type: String,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-//  Password hash before save
+// hash password before save
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
@@ -78,36 +67,30 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-//  Method to compare password
+// compare password
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate Access Token
+// access token
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
-      id: this._id,
+      _id: this._id,
       username: this.username,
-      fullName: this.fullname,
+      fullName: this.fullName, // fix typo (was fullname)
     },
     process.env.ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-    }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "15m" }
   );
 };
 
-// Generate Refresh Token
+// refresh token
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
-    {
-      id: this._id,
-    },
+    { _id: this._id },
     process.env.REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-    }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d" }
   );
 };
 
