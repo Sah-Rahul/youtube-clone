@@ -3,29 +3,14 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
+import { sendTokens } from "../utils/sendToken.js";
 
-// helper
-const sendTokens = (user, res, message = "Success") => {
-  const accessToken = user.generateAccessToken();
-  const refreshToken = user.generateRefreshToken();
+// Helper
 
-  user.refreshToken = refreshToken;
-  user.save({ validateBeforeSave: false });
 
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
+// Register
 
-  res.cookie("accessToken", accessToken, cookieOptions);
-  res.cookie("refreshToken", refreshToken, cookieOptions);
-
-  return { accessToken, refreshToken, message };
-};
-
-// register
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, username, email, password } = req.body;
 
@@ -61,7 +46,11 @@ export const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImageUrl || "",
   });
 
-  const { accessToken } = sendTokens(user, res, "User registered successfully");
+  const { accessToken } = await sendTokens(
+    user,
+    res,
+    "User registered successfully"
+  );
 
   return res.status(201).json(
     new ApiResponse(201, {
@@ -77,17 +66,24 @@ export const registerUser = asyncHandler(async (req, res) => {
   );
 });
 
-// login
+// Login
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) throw new ApiError(400, "Email and password required");
+  if (!email || !password)
+    throw new ApiError(400, "Email and password required");
 
-  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password"
+  );
   if (!user || !(await user.comparePassword(password))) {
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const { accessToken } = sendTokens(user, res, "User logged in successfully");
+  const { accessToken } = await sendTokens(
+    user,
+    res,
+    "User logged in successfully"
+  );
 
   return res.status(200).json(
     new ApiResponse(200, {
@@ -103,7 +99,8 @@ export const loginUser = asyncHandler(async (req, res) => {
   );
 });
 
-// logout
+// Logout
+
 export const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } });
 
@@ -113,10 +110,52 @@ export const logoutUser = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "User logged out"));
 });
 
-// profile
+// Profile
 export const getMyProfile = asyncHandler(async (req, res) => {
   if (!req.user) throw new ApiError(401, "Not authenticated");
   return res
     .status(200)
     .json(new ApiResponse(200, { user: req.user }, "Profile fetched"));
+});
+
+// Refresh Token
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body?.refreshToken;
+
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  try {
+    const decoded = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const user = await User.findById(decoded?._id);
+    if (!user) throw new ApiError(401, "Invalid refresh token");
+
+    if (incomingRefreshToken !== user.refreshToken) {
+      throw new ApiError(401, "Refresh token is expired or already used");
+    }
+
+    const { accessToken, refreshToken } = await sendTokens(
+      user,
+      res,
+      "Access token refreshed"
+    );
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken, refreshToken },
+          "Access token refreshed"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(401, error?.message || "Invalid refresh token");
+  }
 });
