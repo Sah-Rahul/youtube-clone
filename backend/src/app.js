@@ -6,6 +6,13 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
+// routes imports
+
+import userRouter from "./routes/user.routes.js";
+import errorMiddleware from "./utils/error.middleware.js";
+import videoRouter from "./routes/video.routes.js";
+import commentRouter from "./routes/comment.routes.js";
+
 const app = express();
 
 // CORS setup
@@ -21,17 +28,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static("public"));
 
-// routes imports
-
-import userRouter from "./routes/user.routes.js";
-import errorMiddleware from "./utils/error.middleware.js";
-import videoRouter from "./routes/video.routes.js";
-
-
-
-// routes 
-app.use('/api/v1/auth', userRouter)
-app.use('/api/v1/video', videoRouter)
+// routes
+app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/video", videoRouter);
+app.use("/api/v1/comment", commentRouter);
 
 app.use(errorMiddleware);
 export default app;

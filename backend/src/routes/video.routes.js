@@ -1,6 +1,11 @@
 import express from "express";
 import {
+  deleteVideo,
+  getAllVideos,
+  getVideoById,
   publishAVideo,
+  togglePublishStatus,
+  updateVideo,
 } from "../controllers/video.controller.js";
 
 import { verifyJWT } from "../middleware/auth.middleware.js";
