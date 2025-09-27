@@ -125,3 +125,34 @@ export const getVideoById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, video, "Video fetched successfully"));
 });
+
+// UPDATE VIDEO
+export const updateVideo = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  const { title, description } = req.body;
+
+  const video = await Video.findById(videoId);
+  if (!video) throw new ApiError(404, "Video not found");
+
+  if (!video.owner || !req.user) {
+    throw new ApiError(403, "Unauthorized request");
+  }
+  if (video.owner.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "Not authorized to update this video");
+  }
+
+  if (title) video.title = title;
+  if (description) video.description = description;
+
+  // if thumbnail upload
+  if (req.file) {
+    const thumbUpload = await uploadOnCloudinary(req.file.path);
+    if (thumbUpload?.url) video.thumbnail = thumbUpload.url;
+  }
+
+  await video.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, video, "Video updated successfully"));
+});
