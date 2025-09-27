@@ -12,5 +12,6 @@ videoRouter.get("/", getAllVideos);
 
 videoRouter.post("/publish", verifyJWT, upload.single("video"), publishAVideo);
 
+videoRouter.get("/getVideoById/:videoId", getVideoById);
 
 export default videoRouter;
