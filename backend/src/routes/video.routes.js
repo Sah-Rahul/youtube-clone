@@ -18,4 +18,7 @@ videoRouter.put("/update-video/:videoId", verifyJWT, updateVideo);
 
 videoRouter.delete("/delete-video/:videoId", verifyJWT, deleteVideo);
 
+videoRouter.patch("/toggle-publish/:videoId", verifyJWT, togglePublishStatus);
+
+
 export default videoRouter;
