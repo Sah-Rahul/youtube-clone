@@ -8,6 +8,8 @@ import { upload } from "../middleware/multer.middleware.js";
 
 const videoRouter = express.Router();
 
+videoRouter.get("/", getAllVideos);
+
 videoRouter.post("/publish", verifyJWT, upload.single("video"), publishAVideo);
 
 

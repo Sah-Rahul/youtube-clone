@@ -50,3 +50,63 @@ export const publishAVideo = asyncHandler(async (req, res) => {
   }
 });
 
+// GET ALL VIDEOS
+export const getAllVideos = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    query = "",
+    sortBy = "createdAt",
+    sortType = "desc",
+    userId,
+  } = req.query;
+
+  // Match filter
+  const match = {};
+  if (query) {
+    match.title = { $regex: query, $options: "i" };
+  }
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    match.owner = new mongoose.Types.ObjectId(userId);
+  }
+
+  const sortOptions = {
+    [sortBy]: sortType === "asc" ? 1 : -1,
+  };
+
+  const videos = await Video.aggregate([
+    { $match: match },
+    { $sort: sortOptions },
+    { $skip: (page - 1) * parseInt(limit) },
+    { $limit: parseInt(limit) },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    { $unwind: "$owner" },
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        videoFile: 1,
+        thumbnail: 1,
+        isPublished: 1,
+        createdAt: 1,
+        "owner.username": 1,
+        "owner.email": 1,
+      },
+    },
+  ]);
+
+  const total = await Video.countDocuments(match);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, { total, videos }, "Videos fetched successfully")
+    );
+});
