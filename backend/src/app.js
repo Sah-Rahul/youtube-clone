@@ -25,11 +25,13 @@ app.use(express.static("public"));
 
 import userRouter from "./routes/user.routes.js";
 import errorMiddleware from "./utils/error.middleware.js";
+import videoRouter from "./routes/video.routes.js";
 
 
 
 // routes 
 app.use('/api/v1/auth', userRouter)
+app.use('/api/v1/video', videoRouter)
 
 app.use(errorMiddleware);
 export default app;
