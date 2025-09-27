@@ -16,4 +16,6 @@ videoRouter.get("/getVideoById/:videoId", getVideoById);
 
 videoRouter.put("/update-video/:videoId", verifyJWT, updateVideo);
 
+videoRouter.delete("/delete-video/:videoId", verifyJWT, deleteVideo);
+
 export default videoRouter;
