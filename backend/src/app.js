@@ -13,6 +13,7 @@ import errorMiddleware from "./utils/error.middleware.js";
 import videoRouter from "./routes/video.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import healthRouter from "./routes/health.routes.js";
+import likeRouter from "./routes/like.routes.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/health", healthRouter);
+app.use("/api/v1/likes", likeRouter);
 
 app.use(errorMiddleware);
 export default app;
