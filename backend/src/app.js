@@ -15,6 +15,7 @@ import commentRouter from "./routes/comment.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import likeRouter from "./routes/like.routes.js";
 import playlistRouter from "./routes/playlist.routes.js";
+import tweetRouter from "./routes/tweet.routes.js";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/health", healthRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/playlist", playlistRouter);
+app.use("/api/v1/tweets", tweetRouter);
 
 app.use(errorMiddleware);
 export default app;
