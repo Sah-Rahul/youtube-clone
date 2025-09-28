@@ -7,7 +7,6 @@ import jwt from "jsonwebtoken";
 import { sendTokens } from "../utils/sendToken.js";
 import mongoose from "mongoose";
 
-
 // Register
 
 export const registerUser = asyncHandler(async (req, res) => {
@@ -21,6 +20,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar is required");
   }
 
+  // check if user already exists
   const existingUser = await User.findOne({
     $or: [{ email: email.toLowerCase() }, { username: username.toLowerCase() }],
   });
@@ -28,12 +28,17 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User already exists");
   }
 
-  const avatarUrl = await uploadOnCloudinary(req.files.avatar[0].path);
+  //   only store secure_url from Cloudinary response
+  const avatarUpload = await uploadOnCloudinary(req.files.avatar[0].path);
+  const avatarUrl = avatarUpload?.secure_url;
   if (!avatarUrl) throw new ApiError(500, "Avatar upload failed");
 
   let coverImageUrl = "";
   if (req.files?.coverImage?.length) {
-    coverImageUrl = await uploadOnCloudinary(req.files.coverImage[0].path);
+    const coverImageUpload = await uploadOnCloudinary(
+      req.files.coverImage[0].path
+    );
+    coverImageUrl = coverImageUpload?.secure_url || "";
   }
 
   const user = await User.create({
@@ -42,7 +47,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     email: email.toLowerCase(),
     password,
     avatar: avatarUrl,
-    coverImage: coverImageUrl || "",
+    coverImage: coverImageUrl,
   });
 
   const { accessToken } = await sendTokens(
