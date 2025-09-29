@@ -1,4 +1,4 @@
-import   { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Play, Mail, Lock } from "lucide-react";
 import Layout from "../components/Layout";
@@ -6,7 +6,7 @@ import { useUser } from "../context/userContext";
 import toast from "react-hot-toast";
 
 const Login = () => {
-  const { login } = useUser()
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -31,13 +31,13 @@ const Login = () => {
 
     setLoading(true);
 
-    const res = await login(formData); 
+    const res = await login(formData);
 
     setLoading(false);
 
     if (res.success) {
       toast.success("Login successful!");
-      navigate("/");  
+      navigate("/");
     } else {
       toast.error(res.message || "Login failed");
     }

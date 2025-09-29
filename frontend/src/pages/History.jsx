@@ -4,7 +4,7 @@ const History = () => {
   return (
     <>
       <Layout>
-        <div>History</div>
+        <div className="h-screen">History</div>
       </Layout>
     </>
   );
